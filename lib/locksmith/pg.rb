@@ -1,6 +1,8 @@
 require 'zlib'
+require 'uri'
 module Locksmith
-  module Postresql
+  module Pg
+  extend self
   BACKOFF = 0.5
 
     def lock(name)
@@ -13,7 +15,7 @@ module Locksmith
         end
         return result
       ensure
-        unlock(i)
+        release_lock(i)
       end
     end
 

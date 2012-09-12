@@ -40,8 +40,8 @@ Locksmith will use `pg_try_advisory_lock` to lock, no need for table creation.
 ENV["DATABASE_URL"] = "postgresql://user:pass@localhost/database_name"
 
 require 'pg'
-require 'locksmith/postgresql'
-Locksmith::Postgresql.lock("my-resource") do
+require 'locksmith/pg'
+Locksmith::Pg.lock("my-resource") do
   puts("locked my-resource with PostgreSQL")
 end
 ```
