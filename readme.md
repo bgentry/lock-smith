@@ -62,6 +62,11 @@ a year then never think about it again.
 
 There are still some Data Stores to implement, follow the pattern for PostgreSQLand DynamoDB and submit a pull request.
 
+## Contributors
+
+* Ryan Smith
+* Blake Gentry
+
 ## License
 
 Copyright (C) 2012 Ryan Smith
