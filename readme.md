@@ -17,6 +17,13 @@ There is only 1 public method:
 lock(name, &blk)
 ```
 
+Install using the gem. The gem does not depend on the data store drivers, you will need to install those for yourself.
+
+```
+$ gem install pg
+$ gem install lock-smith
+```
+
 ### DynamoDB
 
 Create a DynamoDB table named **Locks** with a hash key **Name**.
