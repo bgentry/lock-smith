@@ -1,0 +1,81 @@
+require 'thread'
+require 'locksmith/log'
+
+module Locksmith
+  module Dynamodb
+    extend self
+    TTL = 60
+    MAX_LOCK_ATTEMPTS = 3
+    LOCK_TIMEOUT = 30
+    LOCK_TABLE = "Locks"
+
+    @dynamo_lock = Mutex.new
+    @table_lock = Mutex.new
+
+    def lock(name)
+      lock = fetch_lock(name)
+      last_rev = lock[:Locked] || 0
+      new_rev = Time.now.to_i
+      attempts = 0
+      while attempts < MAX_LOCK_ATTEMPTS
+        begin
+          Timeout::timeout(LOCK_TIMEOUT) do
+            release_lock(name, last_rev) if last_rev < (Time.now.to_i - TTL)
+            write_lock(name, 0, new_rev)
+            log(at: "lock-acquired", lock: name, rev: new_rev)
+            result = yield
+            release_lock(name, new_rev)
+            log(at: "lock-released", lock: name, rev: new_rev)
+            return result
+          end
+        rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
+          attempts += 1
+        rescue Timeout::Error
+          attempts += 1
+          release_lock(name, new_rev)
+          log(at: "timeout-lock-released", lock: name, rev: new_rev)
+        end
+      end
+    end
+
+    def write_lock(name, rev, new_rev)
+      locks.put({Name: name, Locked: new_rev},
+        :if => {:Locked => rev})
+    end
+
+    def release_lock(name, rev)
+      locks.put({Name: app_name, Locked: 0},
+        :if => {:Locked => rev})
+    end
+
+    def fetch_lock(name)
+      locks[name].attributes
+    end
+
+    def locks
+      table(LOCK_TABLE)
+    end
+
+    def table(name)
+      @table_lock.synchronize {tables[name].items}
+    end
+
+    def tables
+      @tables ||= dynamo.tables.
+        map {|t| t.load_schema}.
+        reduce({}) {|h, t| h[t.name] = t; h}
+    end
+
+    def dynamo
+      @dynamo_lock.synchronize do
+        @db ||= AWS::DynamoDB.new(access_key_id: Config.aws_id,
+                                   secret_access_key: Config.aws_secret)
+      end
+    end
+
+    def log(data, &blk)
+      Log.log({ns: "app-lock"}.merge(data), &blk)
+    end
+
+  end
+end
