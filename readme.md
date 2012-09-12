@@ -2,6 +2,15 @@
 
 A library of locking algorithms for a variety of data stores.
 
+Supported Data Stores:
+
+* DynamoDB
+* PostgreSQL
+* TODO: Memcached
+* TODO: Redis
+* TODO: Doozerd
+* TODO: Zookeeper
+
 ## Usage
 
 There is only 1 public method:
@@ -38,15 +47,6 @@ Locksmith::Postgresql.lock("my-resource") do
   puts("locked my-resource with PostgreSQL")
 end
 ```
-
-## Supported Data Stores
-
-* DynamoDB
-* PostgreSQL
-* TODO: Memcached
-* TODO: Redis
-* TODO: Doozerd
-* TODO: Zookeeper
 
 ## Why Locksmith
 
