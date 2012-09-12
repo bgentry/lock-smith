@@ -1,8 +1,6 @@
 # Locksmith
 
-A library of locking algorithms for a variety of data stores.
-
-Supported Data Stores:
+A library of locking algorithms for a variety of data stores. Supported Data Stores:
 
 * DynamoDB
 * PostgreSQL
