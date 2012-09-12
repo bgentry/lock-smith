@@ -48,11 +48,8 @@ end
 
 ## Why Locksmith
 
-Locking code is tricky and I like to write it once, verify in production for
-a year then never think about it again. While you should be using Zookeeper
-or Doozerd for HA locking, sometime all you have is a DynamoDB or a PostgreSQL.
-Locksmith was designed to be a simple lock algorithm that will work in a bunch
-of different environments.
+Locking code is tricky. Ideally, I would write it once, verify in production for
+a year then never think about it again.
 
 ## Hacking on Locksmith
 
