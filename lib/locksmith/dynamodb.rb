@@ -45,7 +45,7 @@ module Locksmith
     end
 
     def release_lock(name, rev)
-      locks.put({Name: app_name, Locked: 0},
+      locks.put({Name: name, Locked: 0},
         :if => {:Locked => rev})
     end
 
@@ -75,7 +75,7 @@ module Locksmith
     end
 
     def log(data, &blk)
-      Log.log({ns: "app-lock"}.merge(data), &blk)
+      Log.log({ns: "dynamo-lock"}.merge(data), &blk)
     end
 
   end
