@@ -1,4 +1,5 @@
 require 'thread'
+require 'locksmith/config'
 require 'locksmith/log'
 
 module Locksmith

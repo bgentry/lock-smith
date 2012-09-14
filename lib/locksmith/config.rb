@@ -7,7 +7,7 @@ module Locksmith
     end
 
     def env!(key)
-      env(key) || raise("missing #{key}")
+      env(key) || raise("Locksmith is missing #{key}")
     end
 
     def env?(key)
