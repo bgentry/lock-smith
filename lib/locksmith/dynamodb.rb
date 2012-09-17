@@ -50,7 +50,11 @@ module Locksmith
     end
 
     def fetch_lock(name)
-      locks[name].attributes
+      if locks.at(name).exists?(consistent_read: true)
+        locks[name].attributes.to_h(consistent_read: true)
+      else
+        locks.put(Name: name, Locked: 0).attributes.to_h(consistent_read: true)
+      end
     end
 
     def locks
