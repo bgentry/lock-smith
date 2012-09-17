@@ -6,8 +6,6 @@ A library of locking algorithms for a variety of data stores. Supported Data Sto
 
 * DynamoDB
 * PostgreSQL
-* TODO: Memcached
-* TODO: Redis
 * TODO: Doozerd
 * TODO: Zookeeper
 
