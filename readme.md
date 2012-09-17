@@ -1,5 +1,7 @@
 # Locksmith
 
+**This software is beta quality. Check back later to hear battle testing results**
+
 A library of locking algorithms for a variety of data stores. Supported Data Stores:
 
 * DynamoDB
