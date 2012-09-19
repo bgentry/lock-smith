@@ -33,7 +33,10 @@ module Locksmith
           attempts += 1
         rescue Timeout::Error
           attempts += 1
-          release_lock(name, new_rev)
+          begin
+            release_lock(name, new_rev)
+          rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
+          end
           log(at: "timeout-lock-released", lock: name, rev: new_rev)
         end
       end
@@ -45,8 +48,7 @@ module Locksmith
     end
 
     def release_lock(name, rev)
-      locks.put({Name: name, Locked: 0},
-        :if => {:Locked => rev})
+      locks[name].delete(:if => {:Locked => rev})
     end
 
     def fetch_lock(name)
