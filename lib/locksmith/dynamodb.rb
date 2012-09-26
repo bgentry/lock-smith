@@ -21,8 +21,8 @@ module Locksmith
       while attempts < MAX_LOCK_ATTEMPTS
         begin
           Timeout::timeout(LOCK_TIMEOUT) do
-            if last_rev < (Time.now.to_i - TTL)
-              log(at: "lock-expired", lock: name)
+            if last_rev != 0 && last_rev < (Time.now.to_i - TTL)
+              log(at: "lock-expired", lock: name, last_rev: last_rev)
               release_lock!(name)
             end
             write_lock(name, 0, new_rev)
