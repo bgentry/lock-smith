@@ -33,6 +33,7 @@ module Locksmith
             return result
           end
         rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
+          log(at: "lock-not-acquired", lock: name, last_rev: last_rev, new_rev: new_rev)
           attempts += 1
         rescue Timeout::Error
           attempts += 1
