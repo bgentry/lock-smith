@@ -21,7 +21,7 @@ module Locksmith
       while attempts < MAX_LOCK_ATTEMPTS
         begin
           Timeout::timeout(LOCK_TIMEOUT) do
-            release_lock(name, last_rev) if last_rev < (Time.now.to_i - TTL)
+            release_lock!(name) if last_rev < (Time.now.to_i - TTL)
             write_lock(name, 0, new_rev)
             log(at: "lock-acquired", lock: name, rev: new_rev)
             result = yield
@@ -47,6 +47,10 @@ module Locksmith
     def release_lock(name, rev)
       locks.put({Name: name, Locked: 0},
         :if => {:Locked => rev})
+    end
+
+    def release_lock!(name)
+      locks.put(Name: name, Locked: 0)
     end
 
     def fetch_lock(name)
