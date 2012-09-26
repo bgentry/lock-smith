@@ -15,13 +15,16 @@ module Locksmith
 
     def lock(name)
       lock = fetch_lock(name)
-      last_rev = lock[:Locked] || 0
+      last_rev = (lock[:Locked] || 0).to_i
       new_rev = Time.now.to_i
       attempts = 0
       while attempts < MAX_LOCK_ATTEMPTS
         begin
           Timeout::timeout(LOCK_TIMEOUT) do
-            release_lock!(name) if last_rev < (Time.now.to_i - TTL)
+            if last_rev < (Time.now.to_i - TTL)
+              log(at: "lock-expired", lock: name)
+              release_lock!(name)
+            end
             write_lock(name, 0, new_rev)
             log(at: "lock-acquired", lock: name, rev: new_rev)
             result = yield
