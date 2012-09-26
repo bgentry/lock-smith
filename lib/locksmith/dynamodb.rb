@@ -15,7 +15,7 @@ module Locksmith
 
     def lock(name)
       lock = fetch_lock(name)
-      last_rev = (lock[:Locked] || 0).to_i
+      last_rev = (lock["Locked"] || 0).to_i
       new_rev = Time.now.to_i
       attempts = 0
       while attempts < MAX_LOCK_ATTEMPTS
@@ -54,7 +54,7 @@ module Locksmith
     end
 
     def release_lock!(name)
-      locks.put(Name: name, Locked: 0)
+      locks.put({Name: name, Locked: 0})
     end
 
     def fetch_lock(name)
