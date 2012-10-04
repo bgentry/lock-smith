@@ -22,46 +22,46 @@ module Locksmith
         begin
           Timeout::timeout(LOCK_TIMEOUT) do
             if last_rev != 0 && last_rev < (Time.now.to_i - TTL)
-              log(at: "lock-expired", lock: name, last_rev: last_rev)
+              log(:at => "lock-expired", :lock => name, :last_rev => last_rev)
               release_lock!(name)
             end
             write_lock(name, 0, new_rev)
-            log(at: "lock-acquired", lock: name, rev: new_rev)
+            log(:at => "lock-acquired", :lock => name, :rev => new_rev)
             result = yield
             release_lock(name, new_rev)
-            log(at: "lock-released", lock: name, rev: new_rev)
+            log(:at => "lock-released", :lock => name, :rev => new_rev)
             return result
           end
         rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
-          log(at: "lock-not-acquired", lock: name, last_rev: last_rev, new_rev: new_rev)
+          log(:at => "lock-not-acquired", :lock => name, :last_rev => last_rev, :new_rev => new_rev)
           attempts += 1
         rescue Timeout::Error
           attempts += 1
           release_lock(name, new_rev)
-          log(at: "timeout-lock-released", lock: name, rev: new_rev)
+          log(:at => "timeout-lock-released", :lock => name, :rev => new_rev)
         end
       end
     end
 
     def write_lock(name, rev, new_rev)
-      locks.put({Name: name, Locked: new_rev},
+      locks.put({:Name => name, :Locked => new_rev},
         :if => {:Locked => rev})
     end
 
     def release_lock(name, rev)
-      locks.put({Name: name, Locked: 0},
+      locks.put({:Name => name, :Locked => 0},
         :if => {:Locked => rev})
     end
 
     def release_lock!(name)
-      locks.put({Name: name, Locked: 0})
+      locks.put({:Name => name, :Locked => 0})
     end
 
     def fetch_lock(name)
       if locks.at(name).exists?(consistent_read: true)
         locks[name].attributes.to_h(consistent_read: true)
       else
-        locks.put(Name: name, Locked: 0).attributes.to_h(consistent_read: true)
+        locks.put(:Name => name, :Locked => 0).attributes.to_h(consistent_read: true)
       end
     end
 
@@ -81,8 +81,8 @@ module Locksmith
 
     def dynamo
       @dynamo_lock.synchronize do
-        @db ||= AWS::DynamoDB.new(access_key_id: Config.aws_id,
-                                   secret_access_key: Config.aws_secret)
+        @db ||= AWS::DynamoDB.new(:access_key_id => Config.aws_id,
+                                  :secret_access_key => Config.aws_secret)
       end
     end
 
