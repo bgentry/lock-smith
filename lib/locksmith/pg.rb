@@ -28,8 +28,12 @@ module Locksmith
       conn.exec("select pg_advisory_unlock($1)", [i])
     end
 
+    def conn=(conn)
+      @conn = conn
+    end
+
     def conn
-      @con ||= PG::Connection.open(
+      @conn ||= PG::Connection.open(
         dburl.host,
         dburl.port || 5432,
         nil, '', #opts, tty
