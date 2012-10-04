@@ -44,7 +44,7 @@ module Locksmith
     end
 
     def log(data, &blk)
-      Log.log({ns: "postgresql-lock"}.merge(data), &blk)
+      Log.log({:ns => "postgresql-lock"}.merge(data), &blk)
     end
 
   end

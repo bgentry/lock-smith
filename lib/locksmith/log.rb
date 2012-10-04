@@ -4,11 +4,11 @@ module Locksmith
 
     def log(data)
       result = nil
-      data = {lib: "locksmith"}.merge(data)
+      data = {:lib => "locksmith"}.merge(data)
       if block_given?
         start = Time.now
         result = yield
-        data.merge(elapsed: Time.now - start)
+        data.merge(:elapsed => Time.now - start)
       end
       data.reduce(out=String.new) do |s, tup|
         s << [tup.first, tup.last].join("=") << " "
