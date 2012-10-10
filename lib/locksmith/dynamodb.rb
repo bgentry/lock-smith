@@ -1,3 +1,4 @@
+require 'timeout'
 require 'thread'
 require 'locksmith/config'
 require 'locksmith/log'

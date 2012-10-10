@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.name          = "lock-smith"
   s.email         = "ryan@heroku.com"
-  s.version       = "0.0.4"
+  s.version       = "0.0.6"
   s.date          = "2012-09-12"
   s.description   = "Locking toolkit for a variety of data stores."
   s.summary       = "Locking is hard. Write it once."
