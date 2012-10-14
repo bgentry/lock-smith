@@ -9,7 +9,7 @@ module Locksmith
     @dynamo_lock = Mutex.new
     @table_lock = Mutex.new
 
-    LOCK_TABLE = "TestLocks"
+    LOCK_TABLE = "Locks"
 
     def lock(name, opts={})
       opts[:ttl] ||= 60
