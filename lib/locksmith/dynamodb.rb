@@ -17,10 +17,10 @@ module Locksmith
       # Clean up expired locks. Does not grantee that we will
       # be able to acquire the lock, just a nice thing to do for
       # the other processes attempting to lock.
-      rm(name) if expired?(name, opts[:ttl])
+      delete(name) if expired?(name, opts[:ttl])
       if create(name, opts[:attempts])
         begin Timeout::timeout(opts[:ttl]) {return(yield)}
-        ensure rm(name)
+        ensure delete(name)
         end
       end
     end
@@ -37,7 +37,7 @@ module Locksmith
       end
     end
 
-    def rm(name)
+    def delete(name)
       locks.at(name).delete
     end
 
