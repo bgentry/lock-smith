@@ -1,68 +1,51 @@
 require 'timeout'
 require 'thread'
 require 'locksmith/config'
-require 'locksmith/log'
 
 module Locksmith
   module Dynamodb
     extend self
-    TTL = 60
-    MAX_LOCK_ATTEMPTS = 3
-    LOCK_TIMEOUT = 30
-    LOCK_TABLE = "Locks"
-
+    # s safe for threads. This module i
     @dynamo_lock = Mutex.new
     @table_lock = Mutex.new
 
-    def lock(name)
-      lock = fetch_lock(name)
-      last_rev = (lock["Locked"] || 0).to_i
-      new_rev = Time.now.to_i
-      attempts = 0
-      while attempts < MAX_LOCK_ATTEMPTS
-        begin
-          Timeout::timeout(LOCK_TIMEOUT) do
-            if last_rev != 0 && last_rev < (Time.now.to_i - TTL)
-              log(:at => "lock-expired", :lock => name, :last_rev => last_rev)
-              release_lock!(name)
-            end
-            write_lock(name, 0, new_rev)
-            log(:at => "lock-acquired", :lock => name, :rev => new_rev)
-            result = yield
-            release_lock(name, new_rev)
-            log(:at => "lock-released", :lock => name, :rev => new_rev)
-            return result
-          end
-        rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
-          log(:at => "lock-not-acquired", :lock => name, :last_rev => last_rev, :new_rev => new_rev)
-          attempts += 1
-        rescue Timeout::Error
-          attempts += 1
-          release_lock(name, new_rev)
-          log(:at => "timeout-lock-released", :lock => name, :rev => new_rev)
+    LOCK_TABLE = "TestLocks"
+
+    def lock(name, opts={})
+      opts[:ttl] ||= 60
+      opts[:attempts] ||= 3
+      # Clean up expired locks. Does not grantee that we will
+      # be able to acquire the lock, just a nice thing to do for
+      # the other processes attempting to lock.
+      rm(name) if expired?(name, opts[:ttl])
+      if create(name, opts[:attempts])
+        begin Timeout::timeout(opts[:ttl]) {return(yield)}
+        ensure rm(name)
         end
       end
     end
 
-    def write_lock(name, rev, new_rev)
-      locks.put({:Name => name, :Locked => new_rev},
-        :if => {:Locked => rev})
+    def create(name, attempts)
+      attempts.times do |i|
+        begin
+          locks.put({"Name" => name, "Created" => Time.now.to_i},
+            :unless_exists => "Name")
+          return(true)
+        rescue AWS::DynamoDB::Errors::ConditionalCheckFailedException
+          return(false) if i == (attempts - 1)
+        end
+      end
     end
 
-    def release_lock(name, rev)
-      locks.put({:Name => name, :Locked => 0},
-        :if => {:Locked => rev})
+    def rm(name)
+      locks.at(name).delete
     end
 
-    def release_lock!(name)
-      locks.put({:Name => name, :Locked => 0})
-    end
-
-    def fetch_lock(name)
-      if locks.at(name).exists?(consistent_read: true)
-        locks[name].attributes.to_h(consistent_read: true)
-      else
-        locks.put(:Name => name, :Locked => 0).attributes.to_h(consistent_read: true)
+    def expired?(name, ttl)
+      if l = locks.at(name).attributes.to_h(:consistent_read => true)
+        if t = l["Created"]
+          t < (Time.now.to_i - ttl)
+        end
       end
     end
 
@@ -85,10 +68,6 @@ module Locksmith
         @db ||= AWS::DynamoDB.new(:access_key_id => Config.aws_id,
                                   :secret_access_key => Config.aws_secret)
       end
-    end
-
-    def log(data, &blk)
-      Log.log({ns: "dynamo-lock"}.merge(data), &blk)
     end
 
   end

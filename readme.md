@@ -14,7 +14,7 @@ A library of locking algorithms for a variety of data stores. Supported Data Sto
 There is only 1 public method:
 
 ```
-lock(name, &blk)
+lock(name, opts, &blk)
 ```
 
 Install using the gem. The gem does not depend on the data store drivers, you will need to install those for yourself.
@@ -38,6 +38,11 @@ Locksmith::Dynamodb.lock("my-resource") do
   puts("locked my-resource with DynamoDB")
 end
 ```
+
+#### Options
+
+* ttl - Sets TTL on the DynamoDB item & Wraps your block in a timeout. Be sure to handle `Timeout::Error`.
+* attempts - Number of attempts to create DynamoDB item. Your code will only run once.
 
 ### PostgreSQL
 
