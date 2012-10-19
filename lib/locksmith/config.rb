@@ -14,7 +14,15 @@ module Locksmith
       !env(key).nil?
     end
 
-    def aws_id; env!("AWS_ID"); end
-    def aws_secret; env!("AWS_SECRET"); end
+    def aws_id
+      @aws_id ||= env!("AWS_ID")
+    end
+
+    def aws_secret
+      @aws_secret ||= env!("AWS_SECRET")
+    end
+
+    def aws_id=(value); @aws_id = value; end
+    def aws_secret=(value); @aws_secret = value; end
   end
 end
