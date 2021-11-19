@@ -36,7 +36,7 @@ module Locksmith
       @conn ||= PG::Connection.open(
         dburl.host,
         dburl.port || 5432,
-        nil, '', #opts, tty
+        nil, nil, #opts, tty
         dburl.path.gsub("/",""), # database name
         dburl.user,
         dburl.password
@@ -53,4 +53,3 @@ module Locksmith
 
   end
 end
-
